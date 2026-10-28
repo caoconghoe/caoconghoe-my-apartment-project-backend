@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập</title>
+    <link rel="stylesheet" href="/css/public.css">
+</head>
+<body>
+<main class="login-page">
+    <section class="login-visual" aria-label="Giới thiệu hệ thống">
+        <a class="brand" href="building-search.html" aria-label="Trang tìm kiếm tòa nhà">
+            <span class="brand-mark">A</span>
+            <span>Apartment</span>
+        </a>
+
+        <div class="login-copy">
+            <span class="eyebrow">Quản lý bất động sản</span>
+            <h1 class="hero-title">Đăng nhập để quản lý tòa nhà hiệu quả hơn</h1>
+            <p class="subtitle">
+                Truy cập khu vực quản trị, theo dõi danh sách tòa nhà, khách hàng và phân công nhân viên trong cùng một hệ thống.
+            </p>
+        </div>
+    </section>
+
+    <section class="login-shell" aria-labelledby="loginTitle">
+        <div class="login-card">
+            <h2 class="section-title" id="loginTitle">Đăng nhập</h2>
+            <p class="section-text">Nhập tài khoản đã được cấp để tiếp tục.</p>
+
+            <form method="post" action="/login">
+                <div class="field">
+                    <label for="username">Tên đăng nhập</label>
+                    <input type="text" id="username" name="username" autocomplete="username" required>
+                </div>
+
+                <div class="field">
+                    <label for="password">Mật khẩu</label>
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                </div>
+
+                <button class="btn btn-primary" type="submit">Đăng nhập</button>
+            </form>
+
+            <div class="message" id="messageBox"></div>
+            <a class="login-link" href="building-search.html">Xem danh sách tòa nhà</a>
+        </div>
+    </section>
+</main>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const messageBox = document.getElementById('messageBox');
+
+    if (params.has('error')) {
+        messageBox.textContent = 'Sai tên đăng nhập hoặc mật khẩu.';
+    }
+
+    if (params.has('logout')) {
+        messageBox.textContent = 'Bạn đã đăng xuất.';
+        messageBox.classList.add('success');
+    }
+</script>
+</body>
+</html>

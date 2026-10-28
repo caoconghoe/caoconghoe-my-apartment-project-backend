@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hợp đồng thuê</title>
+    <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html"><span class="brand-mark">A</span><span>Staff Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/staff/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/staff/rental-request-list.html">Yêu cầu thuê</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Hợp đồng đã chốt</span>
+                <h1 class="page-title">Hợp đồng thuê của tôi</h1>
+                <p class="subtitle">Theo dõi các hợp đồng được tạo từ những yêu cầu đã duyệt.</p>
+            </div>
+            <span class="badge" id="contractCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Mã HĐ</th>
+                        <th>Khách hàng</th>
+                        <th>Tòa nhà</th>
+                        <th>Diện tích</th>
+                        <th>Thời hạn</th>
+                        <th>Tiền thuê</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                    </thead>
+                    <tbody id="contractTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    fetch('/api/staff/rental-contracts')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('contractTable');
+            document.getElementById('contractCount').textContent = `${data.length} hợp đồng`;
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="7">Chưa có hợp đồng nào.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td>${item.contractCode || ''}</td>
+                    <td>${item.customerName || ''}</td>
+                    <td>${item.buildingName || ''}</td>
+                    <td>${item.rentAreaValue || ''} m2</td>
+                    <td>${item.startDate || ''} → ${item.endDate || ''}</td>
+                    <td>${item.monthlyRent || 0}</td>
+                    <td>${item.status || ''}</td>
+                </tr>
+            `).join('');
+        });
+</script>
+</body>
+</html>

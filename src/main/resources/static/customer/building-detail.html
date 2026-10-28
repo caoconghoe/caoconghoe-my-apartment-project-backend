@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chi tiết tòa nhà</title>
+  <link rel="stylesheet" href="/css/public.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="building-search.html" aria-label="Trang tìm kiếm tòa nhà">
+    <span class="brand-mark">A</span>
+    <span>Apartment</span>
+  </a>
+  <div class="nav-actions">
+    <a class="btn btn-secondary" href="building-search.html">Danh sách</a>
+    <a class="btn btn-secondary" href="/customer/my-rental-requests.html">Yêu cầu của tôi</a>
+<!--    <a class="btn btn-primary" href="login.html">Đăng nhập</a>-->
+  </div>
+</header>
+
+<main class="page page-narrow">
+  <section class="detail-card">
+    <div class="detail-header">
+      <div>
+        <span class="eyebrow">Chi tiết tòa nhà</span>
+        <h1 class="page-title">Thông tin cho thuê</h1>
+        <p class="subtitle">Xem thông tin vận hành, giá thuê, diện tích và người phụ trách tòa nhà.</p>
+      </div>
+      <a class="btn btn-secondary" href="building-search.html">Quay lại danh sách</a>
+    </div>
+
+    <div id="detailContent">
+      <p class="no-data">Đang tải dữ liệu...</p>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="requestTitle">
+    <div class="panel-heading">
+      <div>
+        <h2 class="section-title" id="requestTitle">Gửi yêu cầu thuê</h2>
+        <p class="section-text">Chọn diện tích còn trống hoặc nhập diện tích mong muốn để nhân viên liên hệ.</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="rentAreaId">Diện tích có sẵn</label>
+        <select id="rentAreaId">
+          <option value="">Chọn diện tích</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="requestedArea">Diện tích mong muốn</label>
+        <input type="number" id="requestedArea" placeholder="m2">
+      </div>
+      <div class="field">
+        <label for="startDate">Ngày bắt đầu dự kiến</label>
+        <input type="date" id="startDate">
+      </div>
+      <div class="field">
+        <label for="expectedMonths">Số tháng dự kiến thuê</label>
+        <input type="number" id="expectedMonths" placeholder="Ví dụ: 12">
+      </div>
+      <div class="field full-span">
+        <label for="requestNote">Ghi chú</label>
+        <textarea id="requestNote" rows="4" placeholder="Nhu cầu, thời gian liên hệ, yêu cầu thêm..."></textarea>
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button class="btn btn-primary" type="button" id="submitRequest">Gửi yêu cầu thuê</button>
+    </div>
+    <p class="message" id="requestMessage"></p>
+  </section>
+</main>
+
+<script>
+  function escapeHtml(value) {
+      return String(value ?? '')
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;')
+          .replaceAll('"', '&quot;')
+          .replaceAll("'", '&#039;');
+  }
+
+  function detailItem(label, value, extraClass = '') {
+      const displayValue = value ?? 'N/A';
+      return `
+          <div class="detail-item ${extraClass}">
+              <span class="detail-label">${label}</span>
+              <span class="detail-value">${escapeHtml(displayValue)}</span>
+          </div>
+      `;
+  }
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const buildingId = urlParams.get('id');
+  const detailContent = document.getElementById('detailContent');
+  const rentAreaSelect = document.getElementById('rentAreaId');
+  const requestMessage = document.getElementById('requestMessage');
+
+  if (buildingId) {
+      fetch(`/api/building/${buildingId}`)
+          .then(res => {
+              if (!res.ok) {
+                  throw new Error('Không tìm thấy dữ liệu tòa nhà');
+              }
+              return res.json();
+          })
+          .then(data => {
+              const imageBlock = data.image
+                  ? `<img class="detail-image" src="${escapeHtml(data.image)}" alt="Hình ảnh ${escapeHtml(data.name || 'tòa nhà')}">`
+                  : '<span class="detail-value">Chưa có hình ảnh</span>';
+
+              detailContent.innerHTML = `
+                  <div class="detail-grid">
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Tên tòa nhà</span>
+                          <span class="detail-value title">${escapeHtml(data.name || 'N/A')}</span>
+                      </div>
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Địa chỉ</span>
+                          <span class="detail-value">${escapeHtml(data.address || 'N/A')}</span>
+                      </div>
+
+                      <div class="detail-item">
+                          <span class="detail-label">Giá thuê</span>
+                          <span class="detail-value price">${escapeHtml(data.rentPrice || 0)} triệu/m2</span>
+                      </div>
+
+                      ${detailItem('Diện tích thuê', `${data.rentAreas || 'N/A'} m2`)}
+                      ${detailItem('Số tầng hầm', data.numberOfBasement || 0)}
+                      ${detailItem('Diện tích sàn', `${data.floorArea || 0} m2`)}
+                      ${detailItem('Thời hạn thuê', data.rentTime)}
+                      ${detailItem('Đặt cọc', data.deposit)}
+                      ${detailItem('Thanh toán', data.payment)}
+                      ${detailItem('Phí môi giới', `${data.brokerageFee || 0} %`)}
+                      ${detailItem('Người quản lý', data.managerName)}
+                      ${detailItem('SĐT quản lý', data.managerPhoneNumber)}
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Mô tả giá</span>
+                          <div class="detail-value detail-note">${escapeHtml(data.rentPriceDescription || 'Không có mô tả')}</div>
+                      </div>
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Ghi chú</span>
+                          <div class="detail-value detail-note">${escapeHtml(data.note || 'Không có ghi chú')}</div>
+                      </div>
+
+                      <div class="detail-item full-width">
+                          <span class="detail-label">Hình ảnh</span>
+                          ${imageBlock}
+                      </div>
+                  </div>
+              `;
+          })
+          .catch(error => {
+              detailContent.innerHTML = `<p class="no-data">Lỗi: ${escapeHtml(error.message)}</p>`;
+          });
+
+      fetch(`/api/rental-requests/available-rentareas/${buildingId}`)
+          .then(res => res.json())
+          .then(data => {
+              rentAreaSelect.innerHTML = '<option value="">Chọn diện tích</option>' +
+                  data.map(item => `<option value="${item.id}">${item.value} m2</option>`).join('');
+          })
+          .catch(() => {
+              rentAreaSelect.innerHTML = '<option value="">Không tải được diện tích</option>';
+          });
+  } else {
+      detailContent.innerHTML = '<p class="no-data">ID tòa nhà không hợp lệ.</p>';
+  }
+
+  document.getElementById('submitRequest').addEventListener('click', async () => {
+      requestMessage.className = 'message';
+      requestMessage.textContent = '';
+
+      const payload = {
+          buildingId: Number(buildingId),
+          rentAreaId: rentAreaSelect.value ? Number(rentAreaSelect.value) : null,
+          requestedArea: document.getElementById('requestedArea').value
+              ? Number(document.getElementById('requestedArea').value) : null,
+          startDate: document.getElementById('startDate').value || null,
+          expectedMonths: document.getElementById('expectedMonths').value
+              ? Number(document.getElementById('expectedMonths').value) : null,
+          note: document.getElementById('requestNote').value.trim() || null
+      };
+
+      try {
+          const response = await fetch('/api/rental-requests', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+          });
+          const message = await response.text();
+          if (!response.ok || message !== 'Gui yeu cau thue thanh cong') {
+              throw new Error(message || 'Không thể gửi yêu cầu');
+          }
+          requestMessage.className = 'message success';
+          requestMessage.textContent = 'Gửi yêu cầu thuê thành công.';
+      } catch (error) {
+          requestMessage.textContent = error.message;
+      }
+  });
+</script>
+</body>
+</html>

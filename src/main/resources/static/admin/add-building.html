@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thông tin tòa nhà</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html">
+            <span class="brand-mark">A</span>
+            <span>Manager Workspace</span>
+        </a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/building-list.html">Quay lại tòa nhà</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Biểu mẫu tòa nhà</span>
+                <h1 class="page-title" id="form-title">Thêm tòa nhà</h1>
+                <p class="subtitle">Các trường có dấu * là bắt buộc. Thông tin này sẽ hiển thị trong danh sách và trang tìm kiếm.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Thông tin chi tiết</h2>
+                    <p class="section-text">Nhập đầy đủ dữ liệu vận hành, giá thuê và người quản lý.</p>
+                </div>
+            </div>
+
+            <form class="admin-form-grid" id="building-form">
+                <div class="field"><label for="name">Tên tòa nhà *</label><input type="text" id="name" required></div>
+                <div class="field"><label for="districtId">Quận *</label><select id="districtId" required><option value="1">Quận 1</option><option value="2">Quận 2</option><option value="3">Quận 4</option></select></div>
+                <div class="field"><label for="street">Đường</label><input type="text" id="street"></div>
+                <div class="field"><label for="ward">Phường</label><input type="text" id="ward"></div>
+                <div class="field"><label for="numberOfBasement">Số tầng hầm</label><input type="number" id="numberOfBasement"></div>
+                <div class="field"><label for="floorArea">Diện tích sàn</label><input type="number" id="floorArea"></div>
+                <div class="field"><label for="rentPrice">Giá thuê *</label><input type="number" id="rentPrice" required></div>
+                <div class="field"><label for="brokerageFee">Phí môi giới</label><input type="number" step="0.01" id="brokerageFee"></div>
+                <div class="field"><label for="rentPriceDescription">Mô tả giá thuê</label><input type="text" id="rentPriceDescription"></div>
+                <div class="field"><label for="deposit">Tiền cọc</label><input type="text" id="deposit"></div>
+                <div class="field"><label for="payment">Thanh toán</label><input type="text" id="payment"></div>
+                <div class="field"><label for="rentTime">Thời hạn thuê</label><input type="text" id="rentTime"></div>
+                <div class="field"><label for="managerName">Quản lý</label><input type="text" id="managerName"></div>
+                <div class="field"><label for="managerPhoneNumber">SĐT quản lý</label><input type="text" id="managerPhoneNumber"></div>
+                <div class="field field-full"><label for="image">Ảnh</label><input type="text" id="image" placeholder="/images/test.jpg"><span class="form-help">Nhập đường dẫn ảnh, ví dụ: /images/test.jpg</span></div>
+                <div class="field field-full"><label for="note">Ghi chú</label><textarea id="note"></textarea></div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" id="save-building">Lưu tòa nhà</button>
+                    <a class="btn btn-secondary" href="/admin/building-list.html">Quay lại</a>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id');
+    if (buildingId) {
+        document.getElementById('form-title').innerText = 'Sửa tòa nhà';
+        document.getElementById('save-building').innerText = 'Cập nhật tòa nhà';
+    }
+
+    document.getElementById('save-building').addEventListener('click', saveBuilding);
+    loadBuildingDetail();
+
+    function saveBuilding() {
+        const name = document.getElementById('name').value.trim();
+        const districtId = document.getElementById('districtId').value;
+        const rentPrice = document.getElementById('rentPrice').value;
+
+        if (!name) return alert('Tên tòa nhà là trường bắt buộc.');
+        if (!districtId) return alert('Quận là trường bắt buộc.');
+        if (!rentPrice) return alert('Giá thuê là trường bắt buộc.');
+
+        const building = {
+            name,
+            street: document.getElementById('street').value.trim() || null,
+            ward: document.getElementById('ward').value.trim() || null,
+            districtId: parseInt(districtId),
+            numberOfBasement: document.getElementById('numberOfBasement').value ? parseInt(document.getElementById('numberOfBasement').value) : null,
+            floorArea: document.getElementById('floorArea').value ? parseInt(document.getElementById('floorArea').value) : null,
+            rentPrice: parseInt(rentPrice),
+            rentPriceDescription: document.getElementById('rentPriceDescription').value.trim() || null,
+            deposit: document.getElementById('deposit').value.trim() || null,
+            payment: document.getElementById('payment').value.trim() || null,
+            rentTime: document.getElementById('rentTime').value.trim() || null,
+            brokerageFee: document.getElementById('brokerageFee').value || null,
+            note: document.getElementById('note').value.trim() || null,
+            image: document.getElementById('image').value.trim() || null,
+            managerName: document.getElementById('managerName').value.trim() || null,
+            managerPhoneNumber: document.getElementById('managerPhoneNumber').value.trim() || null
+        };
+
+        fetch(buildingId ? `/api/building/${buildingId}` : '/api/building', {
+            method: buildingId ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(building)
+        })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                window.location.href = '/admin/building-list.html';
+            })
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+    }
+
+    function loadBuildingDetail() {
+        if (!buildingId) return;
+
+        fetch(`/api/building/${buildingId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Không lấy được chi tiết tòa nhà');
+                return response.json();
+            })
+            .then(data => {
+                ['name', 'street', 'ward', 'rentPrice', 'numberOfBasement', 'floorArea', 'rentPriceDescription', 'deposit', 'payment', 'rentTime', 'brokerageFee', 'note', 'image', 'managerName', 'managerPhoneNumber'].forEach(id => {
+                    document.getElementById(id).value = data[id] ?? '';
+                });
+                document.getElementById('districtId').value = data.districtId ?? '1';
+            })
+            .catch(error => alert('Lỗi tải dữ liệu: ' + error.message));
+    }
+</script>
+</body>
+</html>

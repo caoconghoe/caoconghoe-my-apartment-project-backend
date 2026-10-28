@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu cầu thuê được phân công</title>
+    <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html"><span class="brand-mark">A</span><span>Staff Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/staff/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/staff/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/staff/building-list.html">Tòa nhà</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Công việc mới</span>
+                <h1 class="page-title">Yêu cầu thuê của tôi</h1>
+                <p class="subtitle">Cập nhật tiến độ xử lý cho các yêu cầu manager đã phân công.</p>
+            </div>
+            <span class="badge" id="requestCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title">Danh sách yêu cầu</h2>
+                    <p class="section-text">Bạn chỉ nhìn thấy các yêu cầu đã được giao cho chính mình.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Khách hàng</th>
+                        <th>Tòa nhà</th>
+                        <th>Diện tích</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="requestTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    function areaText(item) {
+        return item.rentAreaValue ? `${item.rentAreaValue} m2` :
+            (item.requestedArea ? `${item.requestedArea} m2 mong muốn` : 'Chưa xác định');
+    }
+
+    function statusCell(item) {
+        if (item.status === 'converted') {
+            return '<span class="badge">converted</span>';
+        }
+        return `
+            <select id="status-${item.id}">
+                <option value="processing" ${item.status === 'processing' ? 'selected' : ''}>processing</option>
+                <option value="approved" ${item.status === 'approved' ? 'selected' : ''}>approved</option>
+                <option value="rejected" ${item.status === 'rejected' ? 'selected' : ''}>rejected</option>
+            </select>
+        `;
+    }
+
+    function actionCell(item) {
+        if (item.status === 'converted') {
+            return '<span class="badge">Đã tạo hợp đồng</span>';
+        }
+        return `
+            <button class="btn" type="button" onclick="updateStatus(${item.id})">Cập nhật</button>
+            ${item.status === 'approved' ? `<a class="btn btn-secondary" href="/staff/rental-contract-form.html?requestId=${item.id}">Tạo hợp đồng</a>` : ''}
+        `;
+    }
+
+    function loadRequests() {
+        fetch('/api/staff/rental-requests')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('requestTable');
+                document.getElementById('requestCount').textContent = `${data.length} yêu cầu`;
+                if (!data.length) {
+                    tbody.innerHTML = '<tr><td colspan="7">Bạn chưa có yêu cầu thuê nào được giao.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.customerName || ''}</td>
+                        <td>${item.buildingName || ''}</td>
+                        <td>${areaText(item)}</td>
+                        <td>${statusCell(item)}</td>
+                        <td>${item.note || ''}</td>
+                        <td>${actionCell(item)}</td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    async function updateStatus(id) {
+        const status = document.getElementById(`status-${id}`).value;
+        const response = await fetch(`/api/staff/rental-requests/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status })
+        });
+        const message = await response.text();
+        alert(message);
+        loadRequests();
+    }
+
+    window.addEventListener('load', loadRequests);
+</script>
+</body>
+</html>

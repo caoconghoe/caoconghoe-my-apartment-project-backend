@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html">
+            <span class="brand-mark">A</span>
+            <span>Manager Workspace</span>
+        </a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/building-list.html">Tòa nhà</a>
+            <a class="btn btn-secondary" href="/admin/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/admin/rental-request-list.html">Yêu cầu thuê</a>
+            <a class="btn btn-secondary" href="/admin/rental-contract-list.html">Hợp đồng</a>
+            <a class="btn btn-secondary" href="/admin/transaction-list.html">Giao dịch</a>
+            <a class="btn btn-secondary" href="/admin/renttype-list.html">Loại thuê</a>
+            <a class="btn btn-secondary" href="/admin/profile.html">Hồ sơ</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Khu vực quản lý</span>
+                <h1 class="page-title">Điều phối tòa nhà, khách hàng và nhân sự</h1>
+                <p class="subtitle">Quản lý dữ liệu vận hành, phân công nhân viên và cấu hình loại hình thuê trong cùng một giao diện.</p>
+            </div>
+        </section>
+
+        <section class="dashboard-grid">
+            <a class="dashboard-card" href="/admin/building-list.html">
+                <span class="card-icon">B</span>
+                <h2>Quản lý tòa nhà</h2>
+                <p>Xem, thêm, sửa, xóa tòa nhà và phân công nhân viên phụ trách.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/customer-list.html">
+                <span class="card-icon">C</span>
+                <h2>Quản lý khách hàng</h2>
+                <p>Thêm, sửa, xóa khách hàng và phân công khách hàng cho nhân viên.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/renttype-list.html">
+                <span class="card-icon">R</span>
+                <h2>Loại hình thuê</h2>
+                <p>Quản lý các loại hình thuê áp dụng cho từng tòa nhà.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/transaction-list.html">
+                <span class="card-icon">T</span>
+                <h2>Quản lý giao dịch</h2>
+                <p>Theo dõi nhân viên nào đã thực hiện giao dịch với khách hàng nào.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/rental-request-list.html">
+                <span class="card-icon">Y</span>
+                <h2>Yêu cầu thuê</h2>
+                <p>Xem nhu cầu thuê mới và phân công nhân viên xử lý.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/rental-contract-list.html">
+                <span class="card-icon">H</span>
+                <h2>Hợp đồng thuê</h2>
+                <p>Xem toàn bộ hợp đồng đã chốt và nhân viên phụ trách.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/rental-payment-list.html">
+                <span class="card-icon">$</span>
+                <h2>Thanh toán thuê</h2>
+                <p>Theo dõi các khoản cọc, tiền thuê, trạng thái đã thu hoặc chưa thu.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/transactiontype-list.html">
+                <span class="card-icon">G</span>
+                <h2>Loại giao dịch</h2>
+                <p>Quản lý danh mục loại giao dịch dùng khi staff ghi nhận chăm sóc khách hàng.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/user-create.html">
+                <span class="card-icon">U</span>
+                <h2>Tạo tài khoản</h2>
+                <p>Tạo tài khoản mới cho manager, staff hoặc customer.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/user-list.html">
+                <span class="card-icon">A</span>
+                <h2>Danh sách người dùng</h2>
+                <p>Xem tài khoản, role, trạng thái và thông tin liên hệ của người dùng hệ thống.</p>
+            </a>
+
+            <a class="dashboard-card" href="/admin/profile.html">
+                <span class="card-icon">P</span>
+                <h2>Thông tin cá nhân</h2>
+                <p>Xem thông tin tài khoản manager đang đăng nhập.</p>
+            </a>
+        </section>
+    </main>
+</div>
+</body>
+</html>

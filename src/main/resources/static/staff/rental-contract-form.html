@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo hợp đồng thuê</title>
+    <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html"><span class="brand-mark">A</span><span>Staff Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/staff/rental-request-list.html">Yêu cầu thuê</a>
+            <a class="btn btn-secondary" href="/staff/rental-contract-list.html">Hợp đồng</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page staff-page-narrow">
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <span class="eyebrow">Từ yêu cầu đã duyệt</span>
+                    <h1 class="page-title">Tạo hợp đồng thuê</h1>
+                    <p class="section-text">Khi lưu, diện tích sẽ chuyển sang trạng thái rented và yêu cầu thành converted.</p>
+                </div>
+            </div>
+
+            <div class="admin-form-grid">
+                <div class="field"><label for="contractCode">Mã hợp đồng</label><input id="contractCode" type="text" placeholder="VD: HD-2026-001"></div>
+                <div class="field"><label for="startDate">Ngày bắt đầu</label><input id="startDate" type="date"></div>
+                <div class="field"><label for="endDate">Ngày kết thúc</label><input id="endDate" type="date"></div>
+                <div class="field"><label for="monthlyRent">Tiền thuê/tháng</label><input id="monthlyRent" type="number" placeholder="Ví dụ: 15000000"></div>
+                <div class="field"><label for="depositAmount">Tiền đặt cọc</label><input id="depositAmount" type="number" placeholder="Ví dụ: 30000000"></div>
+                <div class="field">
+                    <label for="paymentCycle">Chu kỳ thanh toán</label>
+                    <select id="paymentCycle">
+                        <option value="monthly">monthly</option>
+                        <option value="quarterly">quarterly</option>
+                    </select>
+                </div>
+                <div class="field"><label for="signedDate">Ngày ký</label><input id="signedDate" type="date"></div>
+                <div class="field field-full"><label for="note">Ghi chú</label><textarea id="note" rows="4"></textarea></div>
+                <div class="admin-actions field-full">
+                    <button class="btn" type="button" onclick="createContract()">Tạo hợp đồng</button>
+                    <a class="btn btn-secondary" href="/staff/rental-request-list.html">Quay lại</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const requestId = new URLSearchParams(window.location.search).get('requestId');
+
+    async function createContract() {
+        const payload = {
+            contractCode: document.getElementById('contractCode').value.trim(),
+            startDate: document.getElementById('startDate').value || null,
+            endDate: document.getElementById('endDate').value || null,
+            monthlyRent: document.getElementById('monthlyRent').value ? Number(document.getElementById('monthlyRent').value) : null,
+            depositAmount: document.getElementById('depositAmount').value ? Number(document.getElementById('depositAmount').value) : 0,
+            paymentCycle: document.getElementById('paymentCycle').value,
+            signedDate: document.getElementById('signedDate').value || null,
+            note: document.getElementById('note').value.trim() || null
+        };
+
+        const response = await fetch(`/api/staff/rental-contracts/from-request/${requestId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const message = await response.text();
+        alert(message);
+        if (message === 'Tao hop dong thanh cong') {
+            window.location.href = '/staff/rental-contract-list.html';
+        }
+    }
+</script>
+</body>
+</html>

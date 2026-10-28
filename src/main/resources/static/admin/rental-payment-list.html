@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toàn bộ thanh toán thuê</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/admin/rental-contract-list.html">Hợp đồng</a>
+            <a class="btn btn-secondary" href="/admin/rental-request-list.html">Yêu cầu thuê</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Toàn cảnh dòng tiền</span>
+                <h1 class="page-title">Thanh toán thuê</h1>
+                <p class="subtitle">Theo dõi mọi khoản tiền cọc và tiền thuê phát sinh từ hợp đồng.</p>
+            </div>
+            <span class="badge" id="paymentCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Hợp đồng</th>
+                        <th>Khách hàng</th>
+                        <th>Loại</th>
+                        <th>Số tiền</th>
+                        <th>Hạn thanh toán</th>
+                        <th>Ngày thu</th>
+                        <th>Phương thức</th>
+                        <th>Trạng thái</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                    </thead>
+                    <tbody id="paymentTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    fetch('/api/manager/rental-payments')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('paymentTable');
+            document.getElementById('paymentCount').textContent = `${data.length} khoản`;
+            if (!data.length) {
+                tbody.innerHTML = '<tr><td colspan="9">Chưa có khoản thanh toán nào.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td>${item.contractCode || ''}</td>
+                    <td>${item.customerName || ''}</td>
+                    <td>${item.paymentType || ''}</td>
+                    <td>${item.amount || 0}</td>
+                    <td>${item.dueDate || ''}</td>
+                    <td>${item.paidDate || ''}</td>
+                    <td>${item.method || ''}</td>
+                    <td>${item.status || ''}</td>
+                    <td>${item.note || ''}</td>
+                </tr>
+            `).join('');
+        });
+</script>
+</body>
+</html>

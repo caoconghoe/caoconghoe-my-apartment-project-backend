@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân công nhân viên</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/building-list.html">Quay lại tòa nhà</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page staff-page-narrow">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Phân công</span>
+                <h1 class="page-title">Nhân viên phụ trách tòa nhà</h1>
+                <p class="subtitle">Chọn một hoặc nhiều nhân viên để gán vào tòa nhà này.</p>
+            </div>
+        </section>
+
+        <section class="panel-card">
+            <div class="panel-header">
+                <div>
+                    <h2 class="section-title">Danh sách nhân viên</h2>
+                    <p class="section-text">Các nhân viên đã được phân công sẽ được đánh dấu sẵn.</p>
+                </div>
+            </div>
+            <div class="checkbox-list" id="staff-list">Đang tải danh sách nhân viên...</div>
+            <div class="admin-actions admin-panel-actions">
+                <button class="btn" type="button" onclick="saveAssignment()">Lưu phân công</button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const buildingId = urlParams.get('id');
+    let assignedStaffIds = [];
+
+    function loadStaff() {
+        fetch('/api/users/staff')
+            .then(response => {
+                if (!response.ok) throw new Error('Không tải được danh sách staff');
+                return response.json();
+            })
+            .then(data => {
+                const container = document.getElementById('staff-list');
+                if (!data || data.length === 0) {
+                    container.innerHTML = 'Không có nhân viên nào.';
+                    return;
+                }
+                container.innerHTML = data.map(item => {
+                    const checked = assignedStaffIds.includes(item.id) ? 'checked' : '';
+                    return `<label class="checkbox-item"><input type="checkbox" name="staffIds" value="${item.id}" ${checked}>${item.fullName}</label>`;
+                }).join('');
+            })
+            .catch(error => document.getElementById('staff-list').innerHTML = 'Lỗi: ' + error.message);
+    }
+
+    function saveAssignment() {
+        if (!buildingId) return alert('Không tìm thấy ID tòa nhà.');
+        const staffIds = Array.from(document.querySelectorAll('input[name="staffIds"]:checked')).map(item => parseInt(item.value));
+
+        fetch('/api/users/assign-building', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ buildingId: parseInt(buildingId), staffIds })
+        })
+            .then(response => response.text())
+            .then(message => {
+                alert(message);
+                window.location.href = '/admin/building-list.html';
+            })
+            .catch(error => alert('Có lỗi xảy ra: ' + error.message));
+    }
+
+    function loadAssignedStaff() {
+        if (!buildingId) return Promise.resolve();
+        return fetch(`/api/users/assigned-staff/${buildingId}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Không tải được danh sách staff đã phân công');
+                return response.json();
+            })
+            .then(data => assignedStaffIds = data || [])
+            .catch(error => alert('Lỗi tải phân công cũ: ' + error.message));
+    }
+
+    loadAssignedStaff().then(loadStaff);
+</script>
+</body>
+</html>

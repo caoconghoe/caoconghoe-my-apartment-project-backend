@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý yêu cầu thuê</title>
+    <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/admin/dashboard.html"><span class="brand-mark">A</span><span>Manager Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/admin/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/admin/customer-list.html">Khách hàng</a>
+            <a class="btn btn-secondary" href="/admin/building-list.html">Tòa nhà</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Điều phối nhu cầu thuê</span>
+                <h1 class="page-title">Yêu cầu thuê</h1>
+                <p class="subtitle">Xem toàn bộ yêu cầu mới và giao đúng nhân viên phụ trách.</p>
+            </div>
+            <span class="badge" id="requestCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="data-header">
+                <div>
+                    <h2 class="section-title">Danh sách yêu cầu</h2>
+                    <p class="section-text">Phân công staff sẽ tự chuyển yêu cầu từ pending sang processing.</p>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Khách hàng</th>
+                        <th>Tòa nhà</th>
+                        <th>Diện tích</th>
+                        <th>Trạng thái</th>
+                        <th>Nhân viên</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="requestTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    let staffOptions = [];
+
+    function areaText(item) {
+        return item.rentAreaValue ? `${item.rentAreaValue} m2` :
+            (item.requestedArea ? `${item.requestedArea} m2 mong muốn` : 'Chưa xác định');
+    }
+
+    function loadStaff() {
+        return fetch('/api/users/staff')
+            .then(response => response.json())
+            .then(data => { staffOptions = data || []; });
+    }
+
+    function renderStaffSelect(item) {
+        const options = staffOptions.map(staff =>
+            `<option value="${staff.id}" ${item.staffId === staff.id ? 'selected' : ''}>${staff.fullName}</option>`
+        ).join('');
+        return `<select id="staff-${item.id}"><option value="">Chọn nhân viên</option>${options}</select>`;
+    }
+
+    function loadRequests() {
+        fetch('/api/manager/rental-requests')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('requestTable');
+                document.getElementById('requestCount').textContent = `${data.length} yêu cầu`;
+                if (!data.length) {
+                    tbody.innerHTML = '<tr><td colspan="7">Chưa có yêu cầu thuê nào.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.customerName || ''}</td>
+                        <td>${item.buildingName || ''}</td>
+                        <td>${areaText(item)}</td>
+                        <td>${item.status || ''}</td>
+                        <td>${renderStaffSelect(item)}</td>
+                        <td><button class="btn" type="button" onclick="assignStaff(${item.id})">Phân công</button></td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    async function assignStaff(id) {
+        const staffId = document.getElementById(`staff-${id}`).value;
+        if (!staffId) {
+            alert('Hãy chọn nhân viên');
+            return;
+        }
+        const response = await fetch(`/api/manager/rental-requests/${id}/assign`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ staffId: Number(staffId) })
+        });
+        const message = await response.text();
+        alert(message);
+        loadRequests();
+    }
+
+    window.addEventListener('load', async () => {
+        await loadStaff();
+        loadRequests();
+    });
+</script>
+</body>
+</html>

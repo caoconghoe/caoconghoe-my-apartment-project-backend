@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán hợp đồng thuê</title>
+    <link rel="stylesheet" href="/css/staff.css">
+</head>
+<body>
+<div class="staff-shell">
+    <header class="staff-topbar">
+        <a class="brand" href="/staff/dashboard.html"><span class="brand-mark">A</span><span>Staff Workspace</span></a>
+        <nav class="staff-nav">
+            <a class="btn btn-secondary" href="/staff/dashboard.html">Dashboard</a>
+            <a class="btn btn-secondary" href="/staff/rental-contract-list.html">Hợp đồng</a>
+            <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+        </nav>
+    </header>
+
+    <main class="staff-page">
+        <section class="hero-band">
+            <div class="hero-copy">
+                <span class="eyebrow">Dòng tiền hợp đồng</span>
+                <h1 class="page-title">Thanh toán thuê</h1>
+                <p class="subtitle">Theo dõi các khoản cọc và tiền thuê phát sinh từ hợp đồng bạn phụ trách.</p>
+            </div>
+            <span class="badge" id="paymentCount">Đang tải</span>
+        </section>
+
+        <section class="data-card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Hợp đồng</th>
+                        <th>Khách hàng</th>
+                        <th>Loại</th>
+                        <th>Số tiền</th>
+                        <th>Hạn thanh toán</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody id="paymentTable"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    function loadPayments() {
+        fetch('/api/staff/rental-payments')
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('paymentTable');
+                document.getElementById('paymentCount').textContent = `${data.length} khoản`;
+                if (!data.length) {
+                    tbody.innerHTML = '<tr><td colspan="7">Chưa có khoản thanh toán nào.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.map(item => `
+                    <tr>
+                        <td>${item.contractCode || ''}</td>
+                        <td>${item.customerName || ''}</td>
+                        <td>${item.paymentType || ''}</td>
+                        <td>${item.amount || 0}</td>
+                        <td>${item.dueDate || ''}</td>
+                        <td>${item.status || ''}</td>
+                        <td>
+                            ${item.status === 'paid'
+                                ? `Đã thu ${item.paidDate || ''}`
+                                : `<button class="btn" type="button" onclick="markPaid(${item.id})">Đánh dấu đã thanh toán</button>`}
+                        </td>
+                    </tr>
+                `).join('');
+            });
+    }
+
+    async function markPaid(id) {
+        const method = prompt('Phương thức thanh toán?', 'bank_transfer') || 'bank_transfer';
+        const response = await fetch(`/api/staff/rental-payments/${id}/mark-paid`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                paidDate: new Date().toISOString().slice(0, 10),
+                method,
+                note: 'Da xac nhan thanh toan'
+            })
+        });
+        alert(await response.text());
+        loadPayments();
+    }
+
+    window.addEventListener('load', loadPayments);
+</script>
+</body>
+</html>

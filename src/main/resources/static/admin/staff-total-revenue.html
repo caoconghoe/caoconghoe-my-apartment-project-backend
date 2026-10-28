@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<table>
+    <tr>
+        <th>id</th>
+        <th>Ten</th>
+        <th>Doanh thu</th>
+    </tr>
+    <tbody id="result-table"></tbody>
+
+</table>
+<script>
+    fetch(`/api/manager/rental-payments/staff-total-revenue`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Lỗi ' + response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('result-table');
+
+
+
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '';
+                        return;
+                    }
+
+                    tbody.innerHTML=data.map(item => `
+                       <tr>
+                            <td>${item.staffId}</td>
+                            <td>${item.staffName}</td>
+                            <td>${item.totalPaidAmount}</td>
+                       `).join('');
+
+
+                })
+                .catch(error => {
+
+                    document.getElementById('result-table').innerHTML = '<tr><td colspan="8">Không tải được dữ liệu tòa nhà</td></tr>';
+                    console.error(error);
+                });
+</script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu cầu thuê của tôi</title>
+    <link rel="stylesheet" href="/css/public.css">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="/customer/building-search.html">
+        <span class="brand-mark">A</span>
+        <span>Apartment</span>
+    </a>
+    <div class="nav-actions">
+        <a class="btn btn-secondary" href="/customer/building-search.html">Tòa nhà</a>
+        <a class="btn btn-secondary" href="/customer/profile.html">Hồ sơ</a>
+        <a class="btn btn-danger" href="/logout">Đăng xuất</a>
+    </div>
+</header>
+
+<main class="page">
+    <section class="panel">
+        <div class="panel-heading">
+            <div>
+                <span class="eyebrow">Khách hàng</span>
+                <h1 class="page-title">Yêu cầu thuê của tôi</h1>
+                <p class="section-text">Theo dõi các nhu cầu thuê bạn đã gửi cho hệ thống.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="results-card">
+        <div class="results-header">
+            <h2 class="section-title">Danh sách yêu cầu</h2>
+            <span class="badge" id="requestCount">Đang tải</span>
+        </div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Tòa nhà</th>
+                    <th>Diện tích</th>
+                    <th>Ngày bắt đầu</th>
+                    <th>Số tháng</th>
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                </tr>
+                </thead>
+                <tbody id="requestTable"></tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    function formatArea(item) {
+        if (item.rentAreaValue) return `${item.rentAreaValue} m2`;
+        if (item.requestedArea) return `${item.requestedArea} m2 mong muốn`;
+        return 'Chưa xác định';
+    }
+
+    fetch('/api/rental-requests/my')
+        .then(response => response.json())
+        .then(data => {
+            const table = document.getElementById('requestTable');
+            const count = document.getElementById('requestCount');
+
+            if (!Array.isArray(data) || data.length === 0) {
+                table.innerHTML = '<tr><td colspan="6" class="no-data">Bạn chưa có yêu cầu thuê nào.</td></tr>';
+                count.textContent = '0 yêu cầu';
+                return;
+            }
+
+            count.textContent = `${data.length} yêu cầu`;
+            table.innerHTML = data.map(item => `
+                <tr>
+                    <td><span class="building-name">${escapeHtml(item.buildingName)}</span></td>
+                    <td>${escapeHtml(formatArea(item))}</td>
+                    <td>${escapeHtml(item.startDate || 'Chưa chọn')}</td>
+                    <td>${escapeHtml(item.expectedMonths || 'Chưa chọn')}</td>
+                    <td><span class="price-pill">${escapeHtml(item.status)}</span></td>
+                    <td>${escapeHtml(item.note || '')}</td>
+                </tr>
+            `).join('');
+        })
+        .catch(error => {
+            document.getElementById('requestTable').innerHTML =
+                `<tr><td colspan="6" class="no-data">Không thể tải dữ liệu: ${escapeHtml(error.message)}</td></tr>`;
+            document.getElementById('requestCount').textContent = 'Lỗi tải';
+        });
+</script>
+</body>
+</html>
